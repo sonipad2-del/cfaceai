@@ -11,5 +11,6 @@ requests>=2.31.0
 email-validator>=2.0.0
 numpy>=1.26.0
 opencv-python-headless>=4.9.0.80
+python-multipart>=0.0.9
 # deepface>=0.0.90  # optional: uncomment for real face recognition (adds ~2 GB via TensorFlow)
 
