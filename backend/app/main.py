@@ -5,6 +5,8 @@ from .core.database import engine, Base
 from .api import auth, companies, employees, checkins, ads, leaves, announcements, bot
 from .api import admin
 
+FRONTEND_URLS = os.getenv("FRONTEND_URL", "http://localhost:5173").split(",")
+
 # Create database tables automatically (mainly for SQLite or when starting fresh)
 Base.metadata.create_all(bind=engine)
 
@@ -17,7 +19,7 @@ app = FastAPI(
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("FRONTEND_URL", "http://localhost:5173")],
+    allow_origins=FRONTEND_URLS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
