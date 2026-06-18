@@ -49,7 +49,7 @@ class EmployeeRegister(BaseModel):
 class EmployeeResponse(BaseModel):
     id: str
     company_id: str
-    chat_id: str
+    chat_id: Optional[str] = None
     full_name: str
     status: str
     face_registered: bool
@@ -59,6 +59,15 @@ class EmployeeResponse(BaseModel):
     created_at: datetime
     monthly_hours: Optional[float] = 0.0
     monthly_salary: Optional[float] = 0.0
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    position: Optional[str] = None
+    department: Optional[str] = None
+    start_date: Optional[str] = None
+    bank_account: Optional[str] = None
+    bank_name: Optional[str] = None
+    id_card: Optional[str] = None
+    day_off: Optional[str] = None
     class Config:
         from_attributes = True
 
@@ -67,6 +76,52 @@ class EmployeeUpdate(BaseModel):
     status: Optional[str] = None
     base_rate: Optional[float] = None
     employment_type: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    position: Optional[str] = None
+    department: Optional[str] = None
+    start_date: Optional[str] = None
+    bank_account: Optional[str] = None
+    bank_name: Optional[str] = None
+    id_card: Optional[str] = None
+    day_off: Optional[str] = None
+
+class EmployeeSelfRegister(BaseModel):
+    full_name: str
+    join_code: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    position: Optional[str] = None
+    department: Optional[str] = None
+
+class EmployeeApprove(BaseModel):
+    base_rate: float
+    employment_type: str
+    position: Optional[str] = None
+    department: Optional[str] = None
+
+class PayrollExtraCreate(BaseModel):
+    employee_id: str
+    type: str
+    amount: float
+    description: Optional[str] = None
+    month: int
+    year: int
+
+class PayrollDeductionCreate(BaseModel):
+    employee_id: str
+    type: str
+    amount: float
+    description: Optional[str] = None
+    month: int
+    year: int
+
+class AdvanceCreate(BaseModel):
+    chat_id: str
+    amount: float
+    reason: Optional[str] = None
+    month: int
+    year: int
 
 class CheckinRequest(BaseModel):
     chat_id: str
@@ -139,4 +194,3 @@ class AnnouncementResponse(BaseModel):
 
     class Config:
         from_attributes = True
-

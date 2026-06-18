@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Float, Boolean, DateTime, ForeignKey, Index, Integer
+from sqlalchemy import Column, String, Float, Boolean, DateTime, ForeignKey, Index, Integer, Text
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import TypeDecorator, CHAR
@@ -75,9 +75,9 @@ class Employee(Base):
 
     id = Column(GUID(), primary_key=True, default=lambda: str(uuid.uuid4()))
     company_id = Column(GUID(), ForeignKey("companies.id", ondelete="CASCADE"), nullable=False)
-    chat_id = Column(String(100), unique=True, nullable=False, index=True)
+    chat_id = Column(String(100), unique=True, nullable=True, index=True)
     full_name = Column(String(255), nullable=False)
-    status = Column(String(50), default="active") # 'active', 'inactive'
+    status = Column(String(50), default="active") # 'pending', 'active', 'inactive'
     face_registered = Column(Boolean, default=False)
     face_photo_path = Column(String(255), nullable=True)
     base_rate = Column(Float, default=0.0)
@@ -86,10 +86,24 @@ class Employee(Base):
     terms_version = Column(String(50), default="v1.0")
     accepted_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    # Extended profile fields
+    phone = Column(String(20), nullable=True)
+    email = Column(String(255), nullable=True)
+    position = Column(String(100), nullable=True)
+    department = Column(String(100), nullable=True)
+    start_date = Column(String(50), nullable=True)
+    bank_account = Column(String(50), nullable=True)
+    bank_name = Column(String(100), nullable=True)
+    id_card = Column(String(20), nullable=True)
+    day_off = Column(String(50), nullable=True)
+    profile_image = Column(Text, nullable=True)
 
     company = relationship("Company", back_populates="employees")
     checkins = relationship("Checkin", back_populates="employee", cascade="all, delete-orphan")
     leave_requests = relationship("LeaveRequest", back_populates="employee", cascade="all, delete-orphan")
+    payroll_extras = relationship("PayrollExtra", back_populates="employee", cascade="all, delete-orphan")
+    payroll_deductions = relationship("PayrollDeduction", back_populates="employee", cascade="all, delete-orphan")
+    advances = relationship("EmployeeAdvance", back_populates="employee", cascade="all, delete-orphan")
 
 class Checkin(Base):
     __tablename__ = "checkins"
@@ -176,4 +190,54 @@ class AnnouncementLog(Base):
 
     announcement = relationship("Announcement", back_populates="logs")
     employee = relationship("Employee")
+
+
+class PayrollExtra(Base):
+    __tablename__ = "payroll_extras"
+
+    id = Column(GUID(), primary_key=True, default=lambda: str(uuid.uuid4()))
+    company_id = Column(GUID(), ForeignKey("companies.id", ondelete="CASCADE"), nullable=False, index=True)
+    employee_id = Column(GUID(), ForeignKey("employees.id", ondelete="CASCADE"), nullable=False, index=True)
+    type = Column(String(50), nullable=False)  # 'ot', 'diligence', 'bonus', 'food', 'fuel', 'other'
+    amount = Column(Float, nullable=False, default=0.0)
+    description = Column(String(255), nullable=True)
+    month = Column(Integer, nullable=False)
+    year = Column(Integer, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    employee = relationship("Employee", back_populates="payroll_extras")
+
+
+class PayrollDeduction(Base):
+    __tablename__ = "payroll_deductions"
+
+    id = Column(GUID(), primary_key=True, default=lambda: str(uuid.uuid4()))
+    company_id = Column(GUID(), ForeignKey("companies.id", ondelete="CASCADE"), nullable=False, index=True)
+    employee_id = Column(GUID(), ForeignKey("employees.id", ondelete="CASCADE"), nullable=False, index=True)
+    type = Column(String(50), nullable=False)  # 'social_security', 'absent', 'late', 'loan', 'advance', 'other'
+    amount = Column(Float, nullable=False, default=0.0)
+    description = Column(String(255), nullable=True)
+    month = Column(Integer, nullable=False)
+    year = Column(Integer, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    employee = relationship("Employee", back_populates="payroll_deductions")
+
+
+class EmployeeAdvance(Base):
+    __tablename__ = "employee_advances"
+
+    id = Column(GUID(), primary_key=True, default=lambda: str(uuid.uuid4()))
+    company_id = Column(GUID(), ForeignKey("companies.id", ondelete="CASCADE"), nullable=False, index=True)
+    employee_id = Column(GUID(), ForeignKey("employees.id", ondelete="CASCADE"), nullable=False, index=True)
+    amount = Column(Float, nullable=False)
+    reason = Column(String(255), nullable=True)
+    status = Column(String(50), default="pending")  # 'pending', 'approved', 'rejected', 'paid'
+    approved_by = Column(String(100), nullable=True)
+    approved_at = Column(DateTime(timezone=True), nullable=True)
+    month = Column(Integer, nullable=False)
+    year = Column(Integer, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    employee = relationship("Employee", back_populates="advances")
 

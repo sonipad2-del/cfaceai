@@ -12,8 +12,9 @@ import {
   FileText,
   DollarSign,
   ShieldCheck,
+  UserCheck,
 } from 'lucide-react';
-import { companiesAPI } from '../services/api';
+import { companiesAPI, employeesAPI } from '../services/api';
 
 const SUPERADMIN_NAV = [
   { to: '/dashboard',  icon: <LayoutDashboard size={20} />, label: 'Dashboard'    },
@@ -25,12 +26,13 @@ const SUPERADMIN_NAV = [
 ];
 
 const OWNER_NAV = [
-  { to: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'แดชบอร์ด'              },
-  { to: '/employees', icon: <Users           size={20} />, label: 'รายชื่อพนักงาน'       },
-  { to: '/leaves',    icon: <FileText        size={20} />, label: '📝 ลางาน'             },
-  { to: '/payroll',   icon: <DollarSign      size={20} />, label: '💰 สรุปเงินเดือน'    },
-  { to: '/announcements', icon: <Megaphone   size={20} />, label: '📣 ประกาศพนักงาน'    },
-  { to: '/settings',  icon: <SettingsIcon    size={20} />, label: 'ตั้งค่า GPS'          },
+  { to: '/dashboard',          icon: <LayoutDashboard size={20} />, label: 'แดชบอร์ด'           },
+  { to: '/employees',          icon: <Users           size={20} />, label: 'รายชื่อพนักงาน'    },
+  { to: '/pending-employees',  icon: <UserCheck       size={20} />, label: '🔔 รออนุมัติ',  badge: true },
+  { to: '/leaves',             icon: <FileText        size={20} />, label: '📝 ลางาน'          },
+  { to: '/payroll',            icon: <DollarSign      size={20} />, label: '💰 สรุปเงินเดือน' },
+  { to: '/announcements',      icon: <Megaphone       size={20} />, label: '📣 ประกาศพนักงาน' },
+  { to: '/settings',           icon: <SettingsIcon    size={20} />, label: 'ตั้งค่า GPS'       },
 ];
 
 const Sidebar = () => {
@@ -38,11 +40,15 @@ const Sidebar = () => {
   const role = localStorage.getItem('role') || 'owner';
   const isSuperAdmin = role === 'superadmin';
   const [companyName, setCompanyName] = useState(isSuperAdmin ? 'Super Admin' : 'Nova7');
+  const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
     if (isSuperAdmin) return;
     companiesAPI.getMe()
       .then(data => setCompanyName(data.name))
+      .catch(() => {});
+    employeesAPI.getPending()
+      .then(data => setPendingCount(data.length))
       .catch(() => {});
   }, [isSuperAdmin]);
 
@@ -71,7 +77,7 @@ const Sidebar = () => {
       </div>
 
       <nav className="sidebar-nav">
-        {navItems.map(({ to, icon, label }) => (
+        {navItems.map(({ to, icon, label, badge }) => (
           <NavLink
             key={to}
             to={to}
@@ -79,6 +85,9 @@ const Sidebar = () => {
           >
             {icon}
             <span>{label}</span>
+            {badge && pendingCount > 0 && (
+              <span className="nav-badge">{pendingCount}</span>
+            )}
           </NavLink>
         ))}
       </nav>
@@ -201,6 +210,20 @@ const Sidebar = () => {
         .logout-btn:hover {
           color: var(--error);
           background: rgba(239, 71, 111, 0.05);
+        }
+        .nav-badge {
+          margin-left: auto;
+          background: #ffb703;
+          color: #000;
+          border-radius: 50%;
+          min-width: 18px;
+          height: 18px;
+          padding: 0 4px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.7rem;
+          font-weight: 800;
         }
       `}</style>
     </aside>

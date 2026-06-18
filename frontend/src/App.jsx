@@ -10,6 +10,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Employees from './pages/Employees';
+import PendingEmployees from './pages/PendingEmployees';
+import EmployeeRegister from './pages/EmployeeRegister';
 import Settings from './pages/Settings';
 import Ads from './pages/Ads';
 import Leaves from './pages/Leaves';
@@ -66,16 +68,18 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/terms"    element={<Terms />} />
         <Route path="/privacy"  element={<Privacy />} />
+        <Route path="/register/employee" element={<EmployeeRegister />} />
 
         {/* Shared */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
 
         {/* Owner-only routes */}
-        <Route path="/employees" element={<OwnerRoute><Employees /></OwnerRoute>} />
-        <Route path="/leaves"    element={<OwnerRoute><Leaves /></OwnerRoute>} />
-        <Route path="/payroll"   element={<OwnerRoute><Payroll /></OwnerRoute>} />
-        <Route path="/announcements" element={<OwnerRoute><Announcements /></OwnerRoute>} />
-        <Route path="/settings"  element={<OwnerRoute><Settings /></OwnerRoute>} />
+        <Route path="/employees"         element={<OwnerRoute><Employees /></OwnerRoute>} />
+        <Route path="/pending-employees" element={<OwnerRoute><PendingEmployees /></OwnerRoute>} />
+        <Route path="/leaves"            element={<OwnerRoute><Leaves /></OwnerRoute>} />
+        <Route path="/payroll"           element={<OwnerRoute><Payroll /></OwnerRoute>} />
+        <Route path="/announcements"     element={<OwnerRoute><Announcements /></OwnerRoute>} />
+        <Route path="/settings"          element={<OwnerRoute><Settings /></OwnerRoute>} />
 
         {/* Superadmin-only routes */}
         <Route path="/companies" element={<SuperAdminRoute><Companies /></SuperAdminRoute>} />

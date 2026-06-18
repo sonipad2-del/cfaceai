@@ -28,7 +28,6 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Clear token and redirect to login if unauthorized
       localStorage.removeItem('token');
       if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
         window.location.href = '/login';
@@ -73,8 +72,13 @@ export const companiesAPI = {
 };
 
 export const employeesAPI = {
-  getAll: async () => {
-    const response = await api.get('/employees');
+  getAll: async (statusFilter) => {
+    const params = statusFilter ? { status: statusFilter } : {};
+    const response = await api.get('/employees', { params });
+    return response.data;
+  },
+  getPending: async () => {
+    const response = await api.get('/employees', { params: { status: 'pending' } });
     return response.data;
   },
   update: async (id, data) => {
@@ -85,8 +89,74 @@ export const employeesAPI = {
     const response = await api.delete(`/employees/${id}`);
     return response.data;
   },
-  getPayroll: async () => {
-    const response = await api.get('/employees/payroll');
+  approve: async (id, data) => {
+    const response = await api.post(`/employees/${id}/approve`, data);
+    return response.data;
+  },
+  reject: async (id) => {
+    const response = await api.post(`/employees/${id}/reject`);
+    return response.data;
+  },
+  selfRegister: async (data) => {
+    const response = await api.post('/employees/self-register', data);
+    return response.data;
+  },
+  getPayroll: async (month, year) => {
+    const params = {};
+    if (month) params.month = month;
+    if (year) params.year = year;
+    const response = await api.get('/employees/payroll', { params });
+    return response.data;
+  },
+};
+
+export const payrollAPI = {
+  getExtras: async (employeeId, month, year) => {
+    const params = {};
+    if (employeeId) params.employee_id = employeeId;
+    if (month) params.month = month;
+    if (year) params.year = year;
+    const response = await api.get('/payroll/extras', { params });
+    return response.data;
+  },
+  addExtra: async (data) => {
+    const response = await api.post('/payroll/extras', data);
+    return response.data;
+  },
+  removeExtra: async (id) => {
+    const response = await api.delete(`/payroll/extras/${id}`);
+    return response.data;
+  },
+  getDeductions: async (employeeId, month, year) => {
+    const params = {};
+    if (employeeId) params.employee_id = employeeId;
+    if (month) params.month = month;
+    if (year) params.year = year;
+    const response = await api.get('/payroll/deductions', { params });
+    return response.data;
+  },
+  addDeduction: async (data) => {
+    const response = await api.post('/payroll/deductions', data);
+    return response.data;
+  },
+  removeDeduction: async (id) => {
+    const response = await api.delete(`/payroll/deductions/${id}`);
+    return response.data;
+  },
+};
+
+export const advanceAPI = {
+  getAll: async (statusFilter) => {
+    const params = statusFilter ? { status_filter: statusFilter } : {};
+    const response = await api.get('/advance', { params });
+    return response.data;
+  },
+  approve: async (id) => {
+    const response = await api.post(`/advance/${id}/approve`);
+    return response.data;
+  },
+  reject: async (id) => {
+    const response = await api.post(`/advance/${id}/reject`);
     return response.data;
   },
 };
