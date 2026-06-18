@@ -76,12 +76,15 @@ const Landing = () => {
             </p>
             <div className="hero-actions">
               <button className="btn-glow btn-primary-glow" onClick={() => navigate('/register')}>
-                เริ่มต้นใช้งาน
+                เริ่มต้นใช้งานฟรี
               </button>
               <button className="btn-glow btn-secondary-glow" onClick={() => navigate('/login')}>
                 เข้าสู่ระบบ
               </button>
             </div>
+            <p style={{fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '-60px', marginBottom: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}>
+              <CheckCircle2 size={14} color="var(--success)" /> ใช้งานฟรีเต็มรูปแบบ ไม่มีข้อผูกมัด
+            </p>
           </motion.div>
 
           <motion.div 
@@ -285,14 +288,18 @@ const Landing = () => {
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
             <h2 className="hero-title" style={{fontSize: '3rem'}}>พร้อมยกระดับการบริหารพนักงาน<br/>ของคุณแล้วหรือยัง</h2>
             <p className="hero-subtitle">เริ่มต้นใช้งาน NOVA7 และจัดการทุกอย่างได้จากแพลตฟอร์มเดียว</p>
-            <div className="hero-actions" style={{marginBottom: 0}}>
+            <div className="hero-actions" style={{marginBottom: '20px'}}>
               <button className="btn-glow btn-primary-glow" onClick={() => navigate('/register')}>
-                สมัครใช้งาน
+                เริ่มต้นใช้งานฟรี
               </button>
               <button className="btn-glow btn-secondary-glow" onClick={() => navigate('/login')}>
                 เข้าสู่ระบบ
               </button>
             </div>
+            <p style={{fontSize: '0.9rem', color: 'var(--text-muted)'}}>
+              <CheckCircle2 size={16} color="var(--success)" style={{display: 'inline', verticalAlign: 'text-bottom', marginRight: '6px'}}/> 
+              ใช้งานแพลตฟอร์ม NOVA7 ฟรี วันนี้
+            </p>
           </motion.div>
         </section>
 
