@@ -6,6 +6,7 @@ import {
   Navigate
 } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -65,6 +66,7 @@ function App() {
     <Router>
       <Routes>
         {/* Public */}
+        <Route path="/"          element={<Landing />} />
         <Route path="/login"    element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/terms"    element={<Terms />} />
@@ -91,7 +93,7 @@ function App() {
         <Route path="/system"    element={<SuperAdminRoute><System /></SuperAdminRoute>} />
 
         {/* Fallback */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
