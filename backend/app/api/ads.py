@@ -104,6 +104,32 @@ def delete_ad(ad_id: str, current_user: User = Depends(require_superadmin), db: 
     db.commit()
     return None
 
+# 3b. Admin: Update an existing ad
+@router.put("/{ad_id}", response_model=AdResponse)
+def update_ad(ad_id: str, payload: dict, current_user: User = Depends(require_superadmin), db: Session = Depends(get_db)):
+    if current_user.role == "superadmin":
+        ad = db.query(Ad).filter(Ad.id == ad_id).first()
+    else:
+        if not current_user.company_id:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User is not associated with a company")
+        ad = db.query(Ad).filter(Ad.id == ad_id, Ad.company_id == current_user.company_id).first()
+
+    if not ad:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ad not found")
+
+    if "title" in payload:
+        ad.title = payload["title"]
+    if "image_url" in payload:
+        ad.image_url = payload["image_url"]
+    if "affiliate_url" in payload:
+        ad.affiliate_url = payload["affiliate_url"]
+    if "time_slot" in payload:
+        ad.time_slot = payload["time_slot"]
+
+    db.commit()
+    db.refresh(ad)
+    return ad
+
 # 4. Admin: Toggle ad active status
 @router.put("/{ad_id}/toggle", response_model=AdResponse)
 def toggle_ad(ad_id: str, current_user: User = Depends(require_superadmin), db: Session = Depends(get_db)):

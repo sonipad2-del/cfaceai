@@ -185,6 +185,10 @@ export const adsAPI = {
     const response = await api.post('/ads', ad);
     return response.data;
   },
+  update: async (id, ad) => {
+    const response = await api.put(`/ads/${id}`, ad);
+    return response.data;
+  },
   delete: async (id) => {
     const response = await api.delete(`/ads/${id}`);
     return response.data;

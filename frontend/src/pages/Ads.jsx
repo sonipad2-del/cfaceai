@@ -16,6 +16,7 @@ import {
   X,
   CropIcon,
   CheckCircle,
+  Pencil,
 } from 'lucide-react';
 import { adsAPI } from '../services/api';
 
@@ -201,11 +202,20 @@ const Ads = () => {
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Create form state
   const [title, setTitle] = useState('');
   const [croppedImage, setCroppedImage] = useState(null);
   const [affiliateUrl, setAffiliateUrl] = useState('');
   const [timeSlot, setTimeSlot] = useState('morning');
   const [formLoading, setFormLoading] = useState(false);
+
+  // Edit state
+  const [editingAd, setEditingAd] = useState(null); // null = create mode, ad object = edit mode
+  const [editTitle, setEditTitle] = useState('');
+  const [editImage, setEditImage] = useState(null);
+  const [editAffiliateUrl, setEditAffiliateUrl] = useState('');
+  const [editTimeSlot, setEditTimeSlot] = useState('morning');
+  const [editLoading, setEditLoading] = useState(false);
 
   const fetchAds = async () => {
     try {
@@ -244,6 +254,38 @@ const Ads = () => {
       alert('เกิดข้อผิดพลาดในการบันทึกโฆษณา');
     } finally {
       setFormLoading(false);
+    }
+  };
+
+  const handleStartEdit = (ad) => {
+    setEditingAd(ad);
+    setEditTitle(ad.title);
+    setEditImage(null); // will keep existing if null
+    setEditAffiliateUrl(ad.affiliate_url || '');
+    setEditTimeSlot(ad.time_slot || 'morning');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingAd(null);
+  };
+
+  const handleUpdateAd = async (e) => {
+    e.preventDefault();
+    setEditLoading(true);
+    try {
+      await adsAPI.update(editingAd.id, {
+        title: editTitle,
+        ...(editImage ? { image_url: editImage } : {}),
+        affiliate_url: editAffiliateUrl.trim(),
+        time_slot: editTimeSlot,
+      });
+      setEditingAd(null);
+      fetchAds();
+    } catch (err) {
+      console.error('Error updating ad', err);
+      alert('เกิดข้อผิดพลาดในการแก้ไขโฆษณา');
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -404,6 +446,13 @@ const Ads = () => {
 
                   <div className="ad-action-buttons">
                     <button
+                      className="ad-edit-btn"
+                      onClick={() => handleStartEdit(ad)}
+                      title="แก้ไขโฆษณา"
+                    >
+                      <Pencil size={16} /> แก้ไข
+                    </button>
+                    <button
                       className="ad-toggle-btn"
                       onClick={() => handleToggle(ad.id)}
                       title={ad.is_active ? 'ปิดโฆษณา' : 'เปิดโฆษณา'}
@@ -426,6 +475,65 @@ const Ads = () => {
           </div>
         </div>
       </div>
+
+      {/* ---- Edit Modal ---- */}
+      {editingAd && (
+        <div className="edit-modal-overlay" onClick={handleCancelEdit}>
+          <div className="edit-modal-box" onClick={e => e.stopPropagation()}>
+            <div className="edit-modal-header">
+              <h3>✏️ แก้ไขโฆษณา</h3>
+              <button className="edit-modal-close" onClick={handleCancelEdit}><X size={20} /></button>
+            </div>
+            <form onSubmit={handleUpdateAd} className="ads-form">
+              <div className="form-group">
+                <label className="form-label">หัวข้อโฆษณา</label>
+                <input
+                  type="text" required className="form-input"
+                  value={editTitle}
+                  onChange={e => setEditTitle(e.target.value)}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">รูปภาพ (เว้นว่างไว้ถ้าไม่ต้องการเปลี่ยน)</label>
+                <ImageUploadCrop value={editImage} onChange={setEditImage} />
+                {editingAd.image_url && !editImage && (
+                  <div className="edit-current-img-wrap">
+                    <p className="field-hint">รูปปัจจุบัน:</p>
+                    <img src={editingAd.image_url} alt="current" className="edit-current-img" />
+                  </div>
+                )}
+              </div>
+              <div className="form-group">
+                <label className="form-label">Affiliate URL</label>
+                <input
+                  type="url" required className="form-input"
+                  value={editAffiliateUrl}
+                  onChange={e => setEditAffiliateUrl(e.target.value)}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">ช่วงเวลาแสดงผล</label>
+                <select
+                  className="form-input select-input"
+                  value={editTimeSlot}
+                  onChange={e => setEditTimeSlot(e.target.value)}
+                >
+                  <option value="morning">🌞 เช้า (05:00 - 11:59)</option>
+                  <option value="afternoon">☀️ บ่าย (12:00 - 16:59)</option>
+                  <option value="evening">🌙 เย็น (17:00 - 21:59)</option>
+                  <option value="night">🌌 ดึก (22:00 - 04:59)</option>
+                </select>
+              </div>
+              <div className="edit-modal-actions">
+                <button type="button" className="btn btn-secondary" onClick={handleCancelEdit}>ยกเลิก</button>
+                <button type="submit" className="btn btn-primary" disabled={editLoading}>
+                  {editLoading ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <style>{`
         /* ---- Section header ---- */
@@ -557,6 +665,49 @@ const Ads = () => {
           transition: all 0.2s ease; display: flex; align-items: center;
         }
         .ad-trash-btn:hover { color: var(--error); background: rgba(239,71,111,0.1); }
+        .ad-edit-btn {
+          display: flex; align-items: center; gap: 5px;
+          padding: 6px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600;
+          background: rgba(157,78,221,0.15); border: 1px solid rgba(157,78,221,0.35);
+          color: var(--accent); cursor: pointer; transition: all 0.2s;
+        }
+        .ad-edit-btn:hover { background: rgba(157,78,221,0.3); border-color: rgba(157,78,221,0.6); }
+
+        /* ---- Edit Modal ---- */
+        .edit-modal-overlay {
+          position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+          display: flex; align-items: center; justify-content: center;
+          z-index: 1000; padding: 20px;
+        }
+        .edit-modal-box {
+          background: var(--bg-secondary); border: 1px solid var(--border);
+          border-radius: 16px; padding: 28px; width: 100%; max-width: 540px;
+          max-height: 90vh; overflow-y: auto;
+        }
+        .edit-modal-header {
+          display: flex; align-items: center; justify-content: space-between;
+          margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border);
+        }
+        .edit-modal-header h3 { font-size: 1.1rem; font-weight: 700; color: #fff; }
+        .edit-modal-close {
+          background: transparent; border: none; color: var(--text-muted);
+          cursor: pointer; padding: 4px; border-radius: 6px; transition: all 0.2s;
+        }
+        .edit-modal-close:hover { color: #fff; background: rgba(255,255,255,0.08); }
+        .edit-modal-actions {
+          display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;
+        }
+        .btn-secondary {
+          padding: 10px 20px; border-radius: 8px; font-size: 0.9rem;
+          background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+          color: var(--text-muted); cursor: pointer; transition: all 0.2s;
+        }
+        .btn-secondary:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .edit-current-img-wrap { margin-top: 10px; }
+        .edit-current-img {
+          width: 100%; aspect-ratio: 16/9; object-fit: cover;
+          border-radius: 8px; border: 1px solid var(--border); margin-top: 6px;
+        }
       `}</style>
     </div>
   );
