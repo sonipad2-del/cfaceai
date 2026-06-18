@@ -4,9 +4,9 @@ from services.api import get_owner_dashboard, get_pending_leaves
 
 def get_owner_menu_keyboard(is_dual=False):
     keyboard = [
-        ["📊 รายงานวันนี้", "📝 คำขอลา"],
-        ["📣 ส่งประกาศ", "🎁 โปรโมชั่นพนักงาน"],
-        ["⚙️ ตั้งค่า"]
+        ["📊 สรุปงานวันนี้", "📝 อนุมัติลา"],
+        ["📢 แจ้งประกาศ", "🎁 ดูแคมเปญพนักงาน"],
+        ["⚙️ ตั้งค่า", "📞 ติดต่อผู้พัฒนา"]
     ]
     if is_dual:
         keyboard.append(["👤 โหมดพนักงาน"])
@@ -81,7 +81,25 @@ async def handle_owner_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("ขณะนี้ยังไม่มีโปรโมชั่นพิเศษครับ")
             
     elif text == "⚙️ ตั้งค่า":
-        await update.message.reply_text("กรุณาจัดการตั้งค่าทั้งหมดผ่าน Web Dashboard ครับ")
+        await update.message.reply_text(
+            "⚙️ *การตั้งค่าระบบ*\n\n"
+            "กรุณาตั้งค่าผ่าน Web Dashboard ที่:\n"
+            "🌐 https://cfaceai.vercel.app\n\n"
+            "คุณสามารถเพิ่ม/ลบพนักงาน และกำหนดพิกัด GPS ได้ที่นั่นครับ",
+            parse_mode="Markdown"
+        )
+        
+    elif text == "📞 ติดต่อผู้พัฒนา":
+        await update.message.reply_text(
+            "📞 *ติดต่อผู้พัฒนา / เสนอแนะ*\n\n"
+            "พบปัญหา หรือต้องการฟีเจอร์ใหม่ๆ แจ้งทีมงานได้เลยครับ!\n\n"
+            "📱 *Telegram:* @son\_sontaya\n"
+            "☎️ *เบอร์โทรศัพท์:* 088-272-7597\n\n"
+            "💡 *ต้องการฟีเจอร์อะไรเพิ่มไหม?*\n"
+            "เรารับฟังทุกความคิดเห็นและข้อเสนอแนะจากเจ้าของกิจการทุกท่าน! ไม่ว่าจะเป็นระบบรายงานรูปแบบใหม่ การคำนวณเงินเดือนที่ซับซ้อนขึ้น หรือการเชื่อมต่อกับระบบอื่น\n\n"
+            "🎉 *และที่สำคัญ...* เรากำลังเร่งพัฒนาอีกหลายฟีเจอร์เจ๋งๆ ออกมาให้ผู้ใช้งานปัจจุบันได้ \"ใช้กันแบบฟรีๆ\" ในเร็วๆ นี้ครับ!",
+            parse_mode="Markdown"
+        )
     elif text == "👤 โหมดพนักงาน":
         from handlers.menu import get_main_menu_keyboard
         # Note: if they can see this button, is_dual is True

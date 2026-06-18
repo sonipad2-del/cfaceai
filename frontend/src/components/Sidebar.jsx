@@ -13,6 +13,7 @@ import {
   DollarSign,
   ShieldCheck,
   UserCheck,
+  Headphones,
 } from 'lucide-react';
 import { companiesAPI, employeesAPI } from '../services/api';
 
@@ -33,6 +34,7 @@ const OWNER_NAV = [
   { to: '/payroll',            icon: <DollarSign      size={20} />, label: '💰 สรุปเงินเดือน' },
   { to: '/announcements',      icon: <Megaphone       size={20} />, label: '📣 ประกาศพนักงาน' },
   { to: '/settings',           icon: <SettingsIcon    size={20} />, label: 'ตั้งค่า GPS'       },
+  { to: '/contact',            icon: <Headphones      size={20} />, label: '📞 ติดต่อผู้พัฒนา'    },
 ];
 
 const Sidebar = () => {

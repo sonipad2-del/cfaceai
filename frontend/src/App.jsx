@@ -13,6 +13,7 @@ import Employees from './pages/Employees';
 import PendingEmployees from './pages/PendingEmployees';
 import EmployeeRegister from './pages/EmployeeRegister';
 import Settings from './pages/Settings';
+import Contact from './pages/Contact';
 import Ads from './pages/Ads';
 import Leaves from './pages/Leaves';
 import Payroll from './pages/Payroll';
@@ -80,6 +81,7 @@ function App() {
         <Route path="/payroll"           element={<OwnerRoute><Payroll /></OwnerRoute>} />
         <Route path="/announcements"     element={<OwnerRoute><Announcements /></OwnerRoute>} />
         <Route path="/settings"          element={<OwnerRoute><Settings /></OwnerRoute>} />
+        <Route path="/contact"           element={<OwnerRoute><Contact /></OwnerRoute>} />
 
         {/* Superadmin-only routes */}
         <Route path="/companies" element={<SuperAdminRoute><Companies /></SuperAdminRoute>} />
