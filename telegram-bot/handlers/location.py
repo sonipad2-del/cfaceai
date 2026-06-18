@@ -148,14 +148,26 @@ async def display_sponsor_ad(update: Update, chat_id: int, action: str):
     ad = get_active_ad(str(chat_id))
     if not ad:
         return
-        
+
     ad_id = ad.get("id")
     title = ad.get("title", "โปรโมชั่นพิเศษ")
     image_url = ad.get("image_url")
     affiliate_url = ad.get("affiliate_url", "")
-    
+
     log_ad_action(ad_id, str(chat_id), "impression")
-    
+
+    # Support base64 data URIs (uploaded directly from dashboard)
+    photo_input = image_url
+    if image_url and image_url.startswith("data:"):
+        import base64, io
+        try:
+            _, b64data = image_url.split(",", 1)
+            buf = io.BytesIO(base64.b64decode(b64data))
+            buf.name = "ad.jpg"
+            photo_input = buf
+        except Exception:
+            photo_input = image_url
+
     pdpa_note = (
         "<i>การกดรับโปรโมชั่น ถือว่าคุณยอมรับ\n"
         "นโยบายความเป็นส่วนตัว (PDPA) และยินยอมให้\n"
@@ -180,7 +192,7 @@ async def display_sponsor_ad(update: Update, chat_id: int, action: str):
     
     try:
         await update.message.reply_photo(
-            photo=image_url,
+            photo=photo_input,
             caption=caption,
             parse_mode="HTML",
             reply_markup=reply_markup
