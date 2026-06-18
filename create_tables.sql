@@ -25,6 +25,10 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     role VARCHAR(50) DEFAULT 'owner',
+    telegram_id VARCHAR(100) UNIQUE,
+    terms_accepted BOOLEAN DEFAULT FALSE,
+    terms_version VARCHAR(50) DEFAULT 'v1.0',
+    accepted_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -32,12 +36,26 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS employees (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     company_id UUID REFERENCES companies(id) ON DELETE CASCADE,
-    chat_id VARCHAR(100) UNIQUE NOT NULL, -- Telegram chat ID of employee
+    chat_id VARCHAR(100) UNIQUE, -- Telegram chat ID of employee
     full_name VARCHAR(255) NOT NULL,
-    status VARCHAR(50) DEFAULT 'active', -- 'active' or 'inactive'
+    status VARCHAR(50) DEFAULT 'active', -- 'pending', 'active', 'inactive'
     face_registered BOOLEAN DEFAULT FALSE,
     face_photo_path VARCHAR(255),
-    hourly_rate DOUBLE PRECISION DEFAULT 0.0,
+    base_rate DOUBLE PRECISION DEFAULT 0.0,
+    employment_type VARCHAR(50) DEFAULT 'monthly',
+    terms_accepted BOOLEAN DEFAULT FALSE,
+    terms_version VARCHAR(50) DEFAULT 'v1.0',
+    accepted_at TIMESTAMP WITH TIME ZONE,
+    phone VARCHAR(20),
+    email VARCHAR(255),
+    position VARCHAR(100),
+    department VARCHAR(100),
+    start_date VARCHAR(50),
+    bank_account VARCHAR(50),
+    bank_name VARCHAR(100),
+    id_card VARCHAR(20),
+    day_off VARCHAR(50),
+    profile_image TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -74,12 +92,90 @@ CREATE TABLE IF NOT EXISTS ad_logs (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 8. Leave Requests
+CREATE TABLE IF NOT EXISTS leave_requests (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    employee_id UUID REFERENCES employees(id) ON DELETE CASCADE,
+    leave_type VARCHAR(50) NOT NULL,
+    start_date VARCHAR(100) NOT NULL,
+    end_date VARCHAR(100),
+    total_days INTEGER DEFAULT 1,
+    reason VARCHAR(255) NOT NULL,
+    attachment_path VARCHAR(255),
+    status VARCHAR(50) DEFAULT 'pending',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 9. Announcements
+CREATE TABLE IF NOT EXISTS announcements (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID REFERENCES companies(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    image_url VARCHAR(1000),
+    created_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    status VARCHAR(50) DEFAULT 'sent',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    sent_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE IF NOT EXISTS announcement_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    announcement_id UUID REFERENCES announcements(id) ON DELETE CASCADE,
+    employee_id UUID REFERENCES employees(id) ON DELETE SET NULL,
+    delivered_at TIMESTAMP WITH TIME ZONE,
+    read_at TIMESTAMP WITH TIME ZONE,
+    clicked_at TIMESTAMP WITH TIME ZONE
+);
+
+-- 10. Payroll Extras / Deductions / Advances
+CREATE TABLE IF NOT EXISTS payroll_extras (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID REFERENCES companies(id) ON DELETE CASCADE,
+    employee_id UUID REFERENCES employees(id) ON DELETE CASCADE,
+    type VARCHAR(50) NOT NULL,
+    amount DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+    description VARCHAR(255),
+    month INTEGER NOT NULL,
+    year INTEGER NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS payroll_deductions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID REFERENCES companies(id) ON DELETE CASCADE,
+    employee_id UUID REFERENCES employees(id) ON DELETE CASCADE,
+    type VARCHAR(50) NOT NULL,
+    amount DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+    description VARCHAR(255),
+    month INTEGER NOT NULL,
+    year INTEGER NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS employee_advances (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID REFERENCES companies(id) ON DELETE CASCADE,
+    employee_id UUID REFERENCES employees(id) ON DELETE CASCADE,
+    amount DOUBLE PRECISION NOT NULL,
+    reason VARCHAR(255),
+    status VARCHAR(50) DEFAULT 'pending',
+    approved_by VARCHAR(100),
+    approved_at TIMESTAMP WITH TIME ZONE,
+    month INTEGER NOT NULL,
+    year INTEGER NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Indexing for performance
 CREATE INDEX IF NOT EXISTS idx_companies_join_code ON companies(join_code);
 CREATE INDEX IF NOT EXISTS idx_employees_chat_id ON employees(chat_id);
 CREATE INDEX IF NOT EXISTS idx_checkins_employee_id ON checkins(employee_id);
 CREATE INDEX IF NOT EXISTS idx_ads_time_slot ON ads(time_slot);
 CREATE INDEX IF NOT EXISTS idx_ad_logs_ad_id ON ad_logs(ad_id);
+CREATE INDEX IF NOT EXISTS idx_leave_requests_employee_id ON leave_requests(employee_id);
+CREATE INDEX IF NOT EXISTS idx_announcements_company_id ON announcements(company_id);
+CREATE INDEX IF NOT EXISTS idx_announcement_logs_ann_id ON announcement_logs(announcement_id);
 
 -- Insert Mock Data
 INSERT INTO companies (id, name, join_code)
