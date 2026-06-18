@@ -31,6 +31,7 @@ const Settings = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const [copied, setCopied] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [companyName, setCompanyName] = useState('');
 
   // Address Geocoding State
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,6 +46,7 @@ const Settings = () => {
     try {
       const companyInfo = await companiesAPI.getMe();
       setSettings(companyInfo.settings);
+      setCompanyName(companyInfo.name || '');
       
       const qrData = await companiesAPI.getQrCode();
       setQrCodeData(qrData);
@@ -238,6 +240,110 @@ const Settings = () => {
     setTimeout(() => setCodeCopied(false), 2000);
   };
 
+  const handlePrint = () => {
+    const w = window.open('', '_blank');
+    w.document.write(`<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<title>คู่มือพนักงาน – ${companyName || 'บริษัท'}</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  @page { size: A4 portrait; margin: 18mm 20mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; color: #1a1a2e; background: #fff; }
+
+  .page { max-width: 170mm; margin: 0 auto; }
+
+  /* Header */
+  .header { text-align: center; padding-bottom: 14px; border-bottom: 3px solid #7c3aed; margin-bottom: 22px; }
+  .brand { font-size: 2.2rem; font-weight: 800; color: #7c3aed; letter-spacing: 1px; }
+  .brand-sub { font-size: 0.95rem; color: #6b7280; margin-top: 2px; }
+
+  /* Company */
+  .company-block { text-align: center; margin-bottom: 24px; }
+  .company-label { font-size: 0.78rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; }
+  .company-name { font-size: 1.6rem; font-weight: 700; color: #1a1a2e; margin-top: 4px; }
+
+  /* QR section */
+  .qr-section { display: flex; flex-direction: column; align-items: center; margin-bottom: 28px; }
+  .qr-img { width: 180px; height: 180px; border: 6px solid #7c3aed; border-radius: 16px; padding: 6px; background: #fff; }
+  .code-block { margin-top: 14px; text-align: center; }
+  .code-label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; }
+  .code-value { font-size: 2.4rem; font-weight: 800; color: #7c3aed; letter-spacing: 4px; font-family: 'Courier New', monospace; }
+
+  /* Steps */
+  .steps-block { background: #f5f3ff; border: 2px solid #ddd6fe; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px; }
+  .steps-title { font-size: 1.1rem; font-weight: 700; color: #5b21b6; margin-bottom: 16px; }
+  .steps-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .step-item { display: flex; align-items: flex-start; gap: 14px; }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; background: #7c3aed; color: #fff;
+              font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .step-text { font-size: 0.98rem; line-height: 1.5; padding-top: 4px; }
+  .step-code { display: inline-block; background: #ede9fe; border: 1px solid #c4b5fd; color: #5b21b6;
+               padding: 1px 8px; border-radius: 4px; font-family: 'Courier New', monospace; font-weight: 700; }
+
+  /* Footer */
+  .footer { text-align: center; border-top: 1px solid #e5e7eb; padding-top: 14px; color: #9ca3af; font-size: 0.8rem; line-height: 1.7; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="brand">⏰ Nova7</div>
+    <div class="brand-sub">ระบบเช็กอินพิกัดพนักงาน & จัดการบริษัท</div>
+  </div>
+
+  <div class="company-block">
+    <div class="company-label">คู่มือลงทะเบียนพนักงาน</div>
+    <div class="company-name">${companyName || 'บริษัทของคุณ'}</div>
+  </div>
+
+  <div class="qr-section">
+    <img class="qr-img" src="${qrCodeData.qr_code_url}" alt="QR Code"/>
+    <div class="code-block">
+      <div class="code-label">รหัสเข้าร่วมบริษัท</div>
+      <div class="code-value">${qrCodeData.join_code}</div>
+    </div>
+  </div>
+
+  <div class="steps-block">
+    <div class="steps-title">📋 วิธีลงทะเบียน 5 ขั้นตอน</div>
+    <ol class="steps-list">
+      <li class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-text">เปิดแอป <strong>Telegram</strong> บนมือถือ</div>
+      </li>
+      <li class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-text">สแกน <strong>QR Code</strong> ด้านบน หรือค้นหา <span class="step-code">@cfaceai_notify_bot</span> แล้วกด Start</div>
+      </li>
+      <li class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-text">กดปุ่ม <strong>🏢 เข้าร่วมบริษัท</strong></div>
+      </li>
+      <li class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-text">พิมพ์รหัสเข้าร่วม: <span class="step-code">${qrCodeData.join_code}</span></div>
+      </li>
+      <li class="step-item">
+        <div class="step-num">5</div>
+        <div class="step-text">กรอก <strong>ชื่อ-นามสกุล</strong> และถ่ายรูปหน้าตรงเพื่อลงทะเบียน Face ID — เสร็จแล้วสามารถเช็กอินได้ทันที!</div>
+      </li>
+    </ol>
+  </div>
+
+  <div class="footer">
+    <p>หากมีข้อสงสัยกรุณาติดต่อเจ้าของร้านหรือผู้ดูแลระบบโดยตรง</p>
+    <p>ระบบ Nova7 | GPS Check-in &amp; Ads Management System</p>
+  </div>
+</div>
+<script>window.onload = function(){ window.print(); }<\/script>
+</body>
+</html>`);
+    w.document.close();
+  };
+
   const [linkLoading, setLinkLoading] = useState(false);
   const handleLinkTelegram = async () => {
     setLinkLoading(true);
@@ -324,6 +430,20 @@ const Settings = () => {
               <RefreshCw size={16} />
               <span>สร้าง QR Code ใหม่ (Regenerate)</span>
             </button>
+
+            {/* Owner guide: how to onboard employees */}
+            <div className="owner-guide-box">
+              <div className="owner-guide-title">📋 วิธีแนะนำพนักงานใหม่</div>
+              <ol className="owner-guide-steps">
+                <li>แชร์ <strong>QR Code</strong> หรือลิงก์ด้านบนให้พนักงาน</li>
+                <li>พนักงานเปิด Telegram แล้วสแกน QR หรือกดลิงก์</li>
+                <li>บอทจะแสดงปุ่ม <strong>"🏢 เข้าร่วมบริษัท"</strong> ให้กด</li>
+                <li>บอทจะแนะนำขั้นตอนสมัครและลงทะเบียน Face ID ทั้งหมดให้เอง</li>
+              </ol>
+              <button className="print-guide-btn" onClick={handlePrint}>
+                🖨️ พิมพ์คู่มือพนักงาน (A4)
+              </button>
+            </div>
 
             {/* Manual join instructions */}
             <div className="manual-join-box">
@@ -750,6 +870,55 @@ const Settings = () => {
           font-family: monospace;
           font-size: 0.85em;
           color: #fff;
+        }
+
+        /* ---- Owner guide ---- */
+        .owner-guide-box {
+          width: 100%;
+          margin-top: 20px;
+          background: rgba(157, 78, 221, 0.06);
+          border: 1px solid rgba(157, 78, 221, 0.22);
+          border-radius: 12px;
+          padding: 18px 20px;
+          text-align: left;
+          color: #e0aaff;
+        }
+
+        .owner-guide-title {
+          font-weight: 700;
+          font-size: 0.92rem;
+          margin-bottom: 12px;
+          color: #e0aaff;
+        }
+
+        .owner-guide-steps {
+          margin: 0 0 16px 0;
+          padding-left: 20px;
+          color: #d8b4fe;
+          font-size: 0.87rem;
+          line-height: 1.75;
+        }
+
+        .owner-guide-steps strong { color: #fff; }
+
+        .print-guide-btn {
+          width: 100%;
+          padding: 10px 16px;
+          background: linear-gradient(135deg, rgba(157,78,221,0.25), rgba(157,78,221,0.15));
+          border: 1px solid rgba(157, 78, 221, 0.45);
+          border-radius: 8px;
+          color: #e0aaff;
+          font-size: 0.88rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+          text-align: center;
+        }
+
+        .print-guide-btn:hover {
+          background: rgba(157, 78, 221, 0.35);
+          color: #fff;
+          border-color: rgba(157, 78, 221, 0.7);
         }
 
         /* ---- Manual join instructions ---- */
