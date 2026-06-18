@@ -84,7 +84,7 @@ async def handle_owner_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             "⚙️ *การตั้งค่าระบบ*\n\n"
             "กรุณาตั้งค่าผ่าน Web Dashboard ที่:\n"
-            "🌐 https://cfaceai.vercel.app\n\n"
+            "🌐 https://nova7.pro\n\n"
             "คุณสามารถเพิ่ม/ลบพนักงาน และกำหนดพิกัด GPS ได้ที่นั่นครับ",
             parse_mode="Markdown"
         )
