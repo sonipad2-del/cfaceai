@@ -50,7 +50,7 @@ const Register = () => {
       <div className="auth-card glass">
         <div className="auth-header">
           <Clock className="auth-logo" />
-          <h1 className="auth-title">CFaceAI</h1>
+          <h1 className="auth-title">Nova7</h1>
           <p className="auth-subtitle">สร้างบัญชีผู้ใช้งานและลงทะเบียนบริษัท</p>
         </div>
 

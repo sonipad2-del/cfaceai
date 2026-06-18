@@ -45,13 +45,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 await show_owner_dashboard(update, context)
             else:
                 await update.message.reply_text(
-                    "👋 ยินดีต้อนรับสู่ระบบ CFaceAI\n"
+                    "👋 ยินดีต้อนรับสู่ระบบ Nova7\n"
                     "👇 เลือกเมนูด้านล่างเพื่อทำรายการ หรือใช้ /menu เพื่อเปิดเมนูอีกครั้ง",
                     reply_markup=get_main_menu_keyboard()
                 )
         else:
             await update.message.reply_text(
-                "👋 ยินดีต้อนรับสู่ระบบ CFaceAI\n"
+                "👋 ยินดีต้อนรับสู่ระบบ Nova7\n"
                 "คุณยังไม่ได้ลงทะเบียนในระบบ กรุณาสแกน QR Code เพื่อเข้าร่วมบริษัท"
             )
         return ConversationHandler.END
@@ -75,7 +75,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await update.message.reply_text(
-        "📋 *ข้อตกลงการใช้งานระบบ CFaceAI*\n\n"
+        "📋 *ข้อตกลงการใช้งานระบบ Nova7*\n\n"
         "ระบบนี้ใช้สำหรับบันทึกเวลาทำงาน ตรวจสอบการเข้างาน และการสื่อสารภายในองค์กร\n\n"
         "การใช้งานระบบอาจมีการจัดเก็บข้อมูลที่เกี่ยวข้องกับการทำงาน เช่น ชื่อผู้ใช้งาน รูปภาพสำหรับยืนยันตัวตน ข้อมูลตำแหน่งที่ตั้ง (GPS) ในขณะที่ทำการบันทึกเวลาทำงาน และประวัติการลางาน\n\n"
         "ข้อมูลเหล่านี้จะถูกเก็บรักษาเป็นความลับและใช้งานเพื่อวัตถุประสงค์ในการบริหารงานบุคคลและการตรวจสอบภายในบริษัทของคุณเท่านั้น\n\n"

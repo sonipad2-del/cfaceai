@@ -33,7 +33,7 @@ async def show_owner_dashboard(update: Update, context: ContextTypes.DEFAULT_TYP
             f"📝 รออนุมัติลา: {dashboard_data['pending_leaves']} รายการ\n"
         )
     else:
-        text = "🏢 *CFaceAI Dashboard*\nไม่สามารถดึงข้อมูลสรุปได้ในขณะนี้"
+        text = "🏢 *Nova7 Dashboard*\nไม่สามารถดึงข้อมูลสรุปได้ในขณะนี้"
         
     await update.message.reply_text(
         text,

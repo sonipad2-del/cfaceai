@@ -3,7 +3,7 @@ import { Send, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { adminAPI } from '../services/api';
 
 const TEMPLATES = [
-  { label: '📢 แจ้งเตือนทั่วไป', text: '📢 แจ้งเตือนจากระบบ CFaceAI\n\n' },
+  { label: '📢 แจ้งเตือนทั่วไป', text: '📢 แจ้งเตือนจากระบบ Nova7\n\n' },
   { label: '🔔 เตือนเช็กอิน', text: '🔔 เตือนพนักงานทุกท่าน: อย่าลืมเช็กอินก่อนเริ่มงานด้วยนะครับ/ค่ะ' },
   { label: '🏖️ วันหยุด', text: '🏖️ แจ้งวันหยุดพิเศษ: วันที่ ___ ไม่มีการทำงาน' },
   { label: '⚠️ ประกาศสำคัญ', text: '⚠️ ประกาศสำคัญจากฝ่ายบริหาร:\n\n' },

@@ -47,7 +47,7 @@ def main():
     # Unknown text fallback — MUST be last
     app.add_handler(unknown_handler)
     
-    logger.info("CFaceAI Telegram Bot has been initialized. Running polling...")
+    logger.info("Nova7 Telegram Bot has been initialized. Running polling...")
     app.run_polling()
 
 if __name__ == "__main__":

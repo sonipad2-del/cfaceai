@@ -44,7 +44,7 @@ const System = () => {
       <div className="page-header">
         <div>
           <h1 className="page-title">⚙️ System</h1>
-          <p className="page-subtitle">สถานะและข้อมูลระบบ CFaceAI</p>
+          <p className="page-subtitle">สถานะและข้อมูลระบบ Nova7</p>
         </div>
         <button className="btn-icon" onClick={load} title="Refresh">
           <RefreshCw size={18} className={loading ? 'spin' : ''} />
@@ -81,7 +81,7 @@ const System = () => {
       <div className="grid-2-info">
         <div className="card glass info-card">
           <h2 className="card-section-title"><Server size={16} /> System Info</h2>
-          <InfoRow label="Platform"        value="CFaceAI v1.0.0" />
+          <InfoRow label="Platform"        value="Nova7 v1.0.0" />
           <InfoRow label="Backend"         value="FastAPI + Python" />
           <InfoRow label="Database"        value="Supabase PostgreSQL" />
           <InfoRow label="Frontend"        value="React + Vite 5" />

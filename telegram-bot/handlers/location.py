@@ -159,9 +159,9 @@ async def display_sponsor_ad(update: Update, chat_id: int, action: str):
     pdpa_note = (
         "<i>การกดรับโปรโมชั่น ถือว่าคุณยอมรับ\n"
         "นโยบายความเป็นส่วนตัว (PDPA) และยินยอมให้\n"
-        "CFaceAI เปิดเผยข้อมูลเพื่อวัตถุประสงค์ทางการตลาด</i>"
+        "Nova7 เปิดเผยข้อมูลเพื่อวัตถุประสงค์ทางการตลาด</i>"
     )
-    caption = f"🎁 <b>ผู้สนับสนุนระบบ CFaceAI</b>\n📌 <b>{title}</b>\n\n{pdpa_note}"
+    caption = f"🎁 <b>ผู้สนับสนุนระบบ Nova7</b>\n📌 <b>{title}</b>\n\n{pdpa_note}"
     
     reply_markup = None
     if affiliate_url and affiliate_url.startswith("http"):

@@ -11,7 +11,7 @@ FRONTEND_URLS = os.getenv("FRONTEND_URL", "http://localhost:5173").split(",")
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="CFaceAI Check-in & Ads API",
+    title="Nova7 Check-in & Ads API",
     description="Backend service for Telegram check-ins and affiliate ads dashboard",
     version="1.0.0"
 )
@@ -38,4 +38,4 @@ app.include_router(admin.router)
 
 @app.get("/")
 def root():
-    return {"message": "Welcome to CFaceAI API. The system is online."}
+    return {"message": "Welcome to Nova7 API. The system is online."}

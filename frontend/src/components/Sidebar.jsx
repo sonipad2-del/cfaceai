@@ -37,7 +37,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const role = localStorage.getItem('role') || 'owner';
   const isSuperAdmin = role === 'superadmin';
-  const [companyName, setCompanyName] = useState(isSuperAdmin ? 'Super Admin' : 'CFaceAI');
+  const [companyName, setCompanyName] = useState(isSuperAdmin ? 'Super Admin' : 'Nova7');
 
   useEffect(() => {
     if (isSuperAdmin) return;
@@ -59,7 +59,7 @@ const Sidebar = () => {
     <aside className="sidebar">
       <div className="sidebar-brand">
         <Clock className="brand-icon" />
-        <span className="brand-name">CFaceAI</span>
+        <span className="brand-name">Nova7</span>
       </div>
 
       <div className={`company-tag ${isSuperAdmin ? 'superadmin-tag' : ''}`}>
