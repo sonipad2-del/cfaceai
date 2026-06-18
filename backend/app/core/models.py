@@ -125,7 +125,7 @@ class Ad(Base):
     id = Column(GUID(), primary_key=True, default=lambda: str(uuid.uuid4()))
     company_id = Column(GUID(), ForeignKey("companies.id", ondelete="CASCADE"), nullable=False)
     title = Column(String(255), nullable=False)
-    image_url = Column(String(1000), nullable=False)
+    image_url = Column(Text, nullable=False)
     affiliate_url = Column(String(1000), nullable=False)
     time_slot = Column(String(50), nullable=False, index=True) # 'morning', 'afternoon', 'evening', 'night'
     is_active = Column(Boolean, default=True)

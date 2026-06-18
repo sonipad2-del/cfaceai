@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS ads (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     company_id UUID REFERENCES companies(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
-    image_url VARCHAR(1000) NOT NULL,
+    image_url TEXT NOT NULL,
     affiliate_url VARCHAR(1000) NOT NULL,
     time_slot VARCHAR(50) NOT NULL, -- 'morning', 'afternoon', 'evening', 'night'
     is_active BOOLEAN DEFAULT TRUE,
@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS announcements (
     company_id UUID REFERENCES companies(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
-    image_url VARCHAR(1000),
+    image_url TEXT,
     created_by UUID REFERENCES users(id) ON DELETE SET NULL,
     status VARCHAR(50) DEFAULT 'sent',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
