@@ -199,23 +199,18 @@ async def display_sponsor_ad(update: Update, chat_id: int, action: str):
         except Exception:
             photo_input = image_url
 
-    pdpa_note = (
-        "<i>การกดรับโปรโมชั่น ถือว่าคุณยอมรับ\n"
-        "นโยบายความเป็นส่วนตัว (PDPA) และยินยอมให้\n"
-        "Nova7 เปิดเผยข้อมูลเพื่อวัตถุประสงค์ทางการตลาด</i>"
-    )
-    caption = f"🎁 <b>ผู้สนับสนุนระบบ Nova7</b>\n📌 <b>{title}</b>\n\n{pdpa_note}"
+    caption = f"🎁 <b>โปรโมชั่นพิเศษสำหรับคุณ!</b>\n📌 <b>{title}</b>"
 
     reply_markup = None
     if affiliate_url and affiliate_url.startswith("http"):
         from datetime import datetime, timezone, timedelta
         hour = datetime.now(timezone(timedelta(hours=7))).hour
         if hour < 12:
-            btn_text = "🎁 รับโปรเช้านี้เลย!"
+            btn_text = "🛍️ กดเพื่อดูโปรโมชั่น →"
         elif hour < 17:
-            btn_text = "🛒 รับสิทธิ์เลย!"
+            btn_text = "🛍️ กดเพื่อดูโปรโมชั่น →"
         else:
-            btn_text = "🌙 รับดีลคืนนี้!"
+            btn_text = "🛍️ กดเพื่อดูโปรโมชั่น →"
 
         keyboard = [[InlineKeyboardButton(btn_text, url=affiliate_url)]]
         reply_markup = InlineKeyboardMarkup(keyboard)
