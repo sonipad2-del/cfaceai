@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
-from typing import List
+from typing import List, Optional
 from datetime import datetime, timezone, timedelta, time
 import os
 import sys
@@ -157,6 +157,7 @@ async def verify_face(
     lat: float,
     lng: float,
     file: UploadFile = File(...),
+    action: Optional[str] = Query(None, description="Forced action: 'check_in' or 'check_out'. Auto-detects if omitted."),
     db: Session = Depends(get_db)
 ):
     # 1. Find employee
@@ -270,20 +271,29 @@ async def verify_face(
         Checkin.check_in_time >= start_today,
         Checkin.check_in_time < end_today
     ).order_by(Checkin.check_in_time.desc()).first()
-    
+
     now_utc = datetime.now(timezone.utc)
     time_str = now_utc.astimezone(TZ_BANGKOK).strftime("%H:%M น.")
-    
-    if existing_checkin and existing_checkin.check_out_time is None:
-        # Check out
-        existing_checkin.check_out_time = now_utc
-        existing_checkin.distance_out = distance
-        existing_checkin.match_score = match_percentage
-        db.commit()
-        db.refresh(existing_checkin)
-        action = "check_out"
-    else:
-        # Check in
+
+    if action == "check_out":
+        # User explicitly chose check-out
+        if existing_checkin and existing_checkin.check_out_time is None:
+            existing_checkin.check_out_time = now_utc
+            existing_checkin.distance_out = distance
+            existing_checkin.match_score = match_percentage
+            db.commit()
+            db.refresh(existing_checkin)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="ไม่พบการเช็กอินที่ยังไม่ได้เช็กเอาต์ในวันนี้ กรุณาเลือก 'เข้างาน' ก่อนครับ"
+            )
+    elif action == "check_in":
+        # User explicitly chose check-in — close any open record first
+        if existing_checkin and existing_checkin.check_out_time is None:
+            existing_checkin.check_out_time = now_utc
+            existing_checkin.match_score = match_percentage
+            db.commit()
         new_checkin = Checkin(
             employee_id=employee.id,
             check_in_time=now_utc,
@@ -293,7 +303,26 @@ async def verify_face(
         db.add(new_checkin)
         db.commit()
         db.refresh(new_checkin)
-        action = "check_in"
+    else:
+        # Auto-detect (legacy / fallback)
+        if existing_checkin and existing_checkin.check_out_time is None:
+            existing_checkin.check_out_time = now_utc
+            existing_checkin.distance_out = distance
+            existing_checkin.match_score = match_percentage
+            db.commit()
+            db.refresh(existing_checkin)
+            action = "check_out"
+        else:
+            new_checkin = Checkin(
+                employee_id=employee.id,
+                check_in_time=now_utc,
+                distance_in=distance,
+                match_score=match_percentage
+            )
+            db.add(new_checkin)
+            db.commit()
+            db.refresh(new_checkin)
+            action = "check_in"
     
     # 8. Notify owner via Telegram
     try:

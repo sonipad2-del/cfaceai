@@ -111,7 +111,7 @@ def check_location(chat_id: str, lat: float, lng: float):
         print(f"Error checking location: {e}")
     return None
 
-def verify_face(chat_id: str, lat: float, lng: float, photo_bytes: bytes):
+def verify_face(chat_id: str, lat: float, lng: float, photo_bytes: bytes, action: str = None):
     try:
         files = {"file": ("selfie.jpg", photo_bytes, "image/jpeg")}
         params = {
@@ -119,6 +119,8 @@ def verify_face(chat_id: str, lat: float, lng: float, photo_bytes: bytes):
             "lat": lat,
             "lng": lng
         }
+        if action:
+            params["action"] = action
         resp = requests.post(f"{API_URL}/checkins/verify-face", params=params, files=files, timeout=30)
         if resp.status_code == 200:
             return resp.json()

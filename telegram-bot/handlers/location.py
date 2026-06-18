@@ -14,6 +14,7 @@ from services.api import check_location, verify_face, get_active_ad, log_ad_acti
 TZ_BANGKOK = timezone(timedelta(hours=7))
 BACKEND_URL = os.getenv("BACKEND_API_URL", "http://localhost:8080")
 
+WAITING_FOR_ACTION = 0
 WAITING_FOR_SELFIE = 1
 
 def get_thai_day_name() -> str:
@@ -24,20 +25,20 @@ def get_thai_day_name() -> str:
 async def handle_location_init(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user_location = update.message.location
     chat_id = update.effective_chat.id
-    
+
     lat = user_location.latitude
     lng = user_location.longitude
-    
-    # 1. Post coordinates to backend to verify distance
+
+    # 1. Verify location with backend
     result = check_location(str(chat_id), lat, lng)
-    
+
     if not result:
         await update.message.reply_text(
             "❌ เกิดข้อผิดพลาดในการเชื่อมต่อระบบ หรือคุณยังไม่ได้ลงทะเบียนพนักงานในระบบ กรุณากดปุ่มลิงก์แนะนำตัว /start ครับ"
         )
         return ConversationHandler.END
 
-    # 2. Check out of bounds
+    # 2. Out of bounds
     if result.get("status") == "out_of_bounds":
         distance = result.get("distance")
         await update.message.reply_text(
@@ -46,24 +47,54 @@ async def handle_location_init(update: Update, context: ContextTypes.DEFAULT_TYP
             f"กรุณาเข้ามาในพื้นที่รัศมีที่กำหนดก่อนครับ"
         )
         return ConversationHandler.END
-        
-    # 3. Check if Face ID is registered
+
+    # 3. Face ID not registered
     if not result.get("face_registered"):
         await update.message.reply_text(
             "❌ บัญชีของคุณยังไม่ได้ลงทะเบียนสแกนใบหน้า (Face ID)\n"
             "กรุณาพิมพ์ /start เพื่ออัปเดตรูปถ่ายใบหน้าตรงก่อนเช็กอินงานครับ"
         )
         return ConversationHandler.END
-        
-    # 4. Save coordinates in session and wait for selfie
+
+    # 4. Save coordinates in session and ask for action
     context.user_data["lat"] = lat
     context.user_data["lng"] = lng
-    
+
+    keyboard = [[
+        InlineKeyboardButton("🟢  เข้างาน", callback_data="checkin_action_checkin"),
+        InlineKeyboardButton("🔴  ออกงาน", callback_data="checkin_action_checkout"),
+    ]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
     await update.message.reply_text(
-        "📍 ตรวจสอบพิกัดถูกต้องอยู่ในระยะพื้นที่ทำงานเรียบร้อย!\n\n"
-        "📸 ขั้นตอนสุดท้าย: กรุณาส่งรูปถ่ายใบหน้าตรง (Selfie) ปัจจุบันของคุณ 1 รูป เพื่อยืนยันตัวตนสแกน Face ID เข้างานครับ"
+        "📍 ตรวจสอบพิกัดถูกต้อง อยู่ในระยะพื้นที่ทำงานเรียบร้อย!\n\n"
+        "กรุณาเลือกประเภทการบันทึก:",
+        reply_markup=reply_markup
+    )
+    return WAITING_FOR_ACTION
+
+
+async def handle_action_select(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    query = update.callback_query
+    await query.answer()
+
+    data = query.data  # "checkin_action_checkin" or "checkin_action_checkout"
+    if data == "checkin_action_checkin":
+        intended_action = "check_in"
+        action_label = "🟢 เข้างาน"
+    else:
+        intended_action = "check_out"
+        action_label = "🔴 ออกงาน"
+
+    context.user_data["intended_action"] = intended_action
+
+    await query.edit_message_text(
+        f"✅ เลือก {action_label} เรียบร้อย\n\n"
+        "📸 กรุณาส่งรูปถ่ายใบหน้าตรง (Selfie) ปัจจุบันของคุณ 1 รูป\n"
+        "เพื่อยืนยันตัวตนสแกน Face ID ครับ"
     )
     return WAITING_FOR_SELFIE
+
 
 async def handle_selfie(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     photo_file = None
@@ -71,35 +102,35 @@ async def handle_selfie(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
         photo_file = await update.message.photo[-1].get_file()
     elif update.message.document and update.message.document.mime_type and update.message.document.mime_type.startswith("image/"):
         photo_file = await update.message.document.get_file()
-        
+
     if not photo_file:
         await update.message.reply_text("❌ กรุณาส่งรูปถ่ายเซลฟี่ใบหน้าตรงของคุณ 1 รูปครับ (หรือพิมพ์ /cancel เพื่อยกเลิก)")
         return WAITING_FOR_SELFIE
-        
+
     chat_id = update.effective_chat.id
     lat = context.user_data.get("lat")
     lng = context.user_data.get("lng")
-    
+    intended_action = context.user_data.get("intended_action")
+
     if not lat or not lng:
         await update.message.reply_text("❌ ไม่พบข้อมูลพิกัดสถานที่ กรุณาแชร์ตำแหน่ง (Location) ใหม่อีกครั้งครับ")
         context.user_data.clear()
         return ConversationHandler.END
-        
+
     await update.message.reply_text("⏳ กำลังประมวลผลสแกนใบหน้าเปรียบเทียบ Face ID...")
-    
+
     try:
         photo_bytes = await photo_file.download_as_bytearray()
-        
-        # Verify face on backend
-        result = verify_face(str(chat_id), lat, lng, bytes(photo_bytes))
-        
+
+        result = verify_face(str(chat_id), lat, lng, bytes(photo_bytes), action=intended_action)
+
         if result and result.get("status") == "success":
             action = result.get("action")
             employee_name = result.get("employee_name")
             check_time = result.get("time")
             distance = result.get("distance")
             match_score = result.get("match_score", 100)
-            
+
             if action == "check_in":
                 day_name = get_thai_day_name()
                 msg = (
@@ -120,10 +151,8 @@ async def handle_selfie(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
                     f"─────────────────\n"
                     f"🌙 ขอบคุณสำหรับการทำงานวันนี้ เดินทางกลับบ้านปลอดภัยนะครับ! 🚗"
                 )
-                
+
             await update.message.reply_text(msg)
-            
-            # Display sponsor ad
             await display_sponsor_ad(update, chat_id, action)
             context.user_data.clear()
             return ConversationHandler.END
@@ -139,10 +168,12 @@ async def handle_selfie(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
         await update.message.reply_text("❌ เกิดข้อผิดพลาดในระบบสแกนใบหน้า กรุณาลองใหม่อีกครั้ง")
         return WAITING_FOR_SELFIE
 
+
 async def cancel_checkin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text("ยกเลิกการเช็กอินเข้างานเรียบร้อยแล้ว")
     context.user_data.clear()
     return ConversationHandler.END
+
 
 async def display_sponsor_ad(update: Update, chat_id: int, action: str):
     ad = get_active_ad(str(chat_id))
@@ -174,10 +205,9 @@ async def display_sponsor_ad(update: Update, chat_id: int, action: str):
         "Nova7 เปิดเผยข้อมูลเพื่อวัตถุประสงค์ทางการตลาด</i>"
     )
     caption = f"🎁 <b>ผู้สนับสนุนระบบ Nova7</b>\n📌 <b>{title}</b>\n\n{pdpa_note}"
-    
+
     reply_markup = None
     if affiliate_url and affiliate_url.startswith("http"):
-        # Enticing CTA button — changes based on time of day
         from datetime import datetime, timezone, timedelta
         hour = datetime.now(timezone(timedelta(hours=7))).hour
         if hour < 12:
@@ -186,10 +216,10 @@ async def display_sponsor_ad(update: Update, chat_id: int, action: str):
             btn_text = "🛒 รับสิทธิ์เลย!"
         else:
             btn_text = "🌙 รับดีลคืนนี้!"
-        
+
         keyboard = [[InlineKeyboardButton(btn_text, url=affiliate_url)]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-    
+
     try:
         await update.message.reply_photo(
             photo=photo_input,
@@ -209,9 +239,6 @@ async def display_sponsor_ad(update: Update, chat_id: int, action: str):
             print(f"Error sending ad text fallback: {e2}")
 
 
-
-
-
 async def close_ad(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -226,14 +253,19 @@ async def unmatched_photo_handler_func(update: Update, context: ContextTypes.DEF
         "จากนั้นค่อยส่งรูปเซลฟี่ตามมาเพื่อเช็กอิน/เช็กเอาต์"
     )
 
-# Export location check-in conversation handler
+
+# Export handlers
 location_handler = ConversationHandler(
     entry_points=[MessageHandler(filters.LOCATION, handle_location_init)],
     states={
-        WAITING_FOR_SELFIE: [MessageHandler((filters.PHOTO | filters.Document.ALL) & ~filters.COMMAND, handle_selfie)],
+        WAITING_FOR_ACTION: [
+            CallbackQueryHandler(handle_action_select, pattern="^checkin_action_(checkin|checkout)$"),
+        ],
+        WAITING_FOR_SELFIE: [
+            MessageHandler((filters.PHOTO | filters.Document.ALL) & ~filters.COMMAND, handle_selfie),
+        ],
     },
     fallbacks=[CommandHandler("cancel", cancel_checkin)],
 )
 close_ad_handler = CallbackQueryHandler(close_ad, pattern="^close_ad$")
 unmatched_photo_handler = MessageHandler((filters.PHOTO | filters.Document.ALL) & ~filters.COMMAND, unmatched_photo_handler_func)
-
