@@ -30,6 +30,7 @@ const Settings = () => {
   const [saveLoading, setSaveLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [copied, setCopied] = useState(false);
+  const [codeCopied, setCodeCopied] = useState(false);
 
   // Address Geocoding State
   const [searchQuery, setSearchQuery] = useState('');
@@ -231,6 +232,12 @@ const Settings = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(qrCodeData.join_code);
+    setCodeCopied(true);
+    setTimeout(() => setCodeCopied(false), 2000);
+  };
+
   const [linkLoading, setLinkLoading] = useState(false);
   const handleLinkTelegram = async () => {
     setLinkLoading(true);
@@ -317,6 +324,33 @@ const Settings = () => {
               <RefreshCw size={16} />
               <span>สร้าง QR Code ใหม่ (Regenerate)</span>
             </button>
+
+            {/* Manual join instructions */}
+            <div className="manual-join-box">
+              <div className="manual-join-title">
+                📱 วิธีสมัครแบบ Manual
+                <span className="manual-join-subtitle">ถ้าสแกน QR หรือกดลิงก์ไม่ได้</span>
+              </div>
+
+              <ol className="manual-join-steps">
+                <li>เปิดแอป <strong>Telegram</strong></li>
+                <li>ค้นหา <code className="bot-handle">@cfaceai_notify_bot</code></li>
+                <li>กด <strong>Start</strong></li>
+                <li>พิมพ์ <code className="bot-handle">/start join_{qrCodeData.join_code}</code></li>
+                <li>ทำตามขั้นตอนในแชตต่อได้เลย</li>
+              </ol>
+
+              <div className="manual-join-code-row">
+                <div className="manual-join-code-label">รหัสเข้าร่วมบริษัท</div>
+                <div className="manual-join-code-wrap">
+                  <span className="manual-join-code-value">{qrCodeData.join_code}</span>
+                  <button className="copy-code-btn" onClick={handleCopyCode}>
+                    {codeCopied ? <Check size={14} /> : <Copy size={14} />}
+                    <span>{codeCopied ? 'คัดลอกแล้ว!' : 'คัดลอกรหัส'}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -715,6 +749,112 @@ const Settings = () => {
           border-radius: 4px;
           font-family: monospace;
           font-size: 0.85em;
+          color: #fff;
+        }
+
+        /* ---- Manual join instructions ---- */
+        .manual-join-box {
+          width: 100%;
+          margin-top: 20px;
+          background: rgba(157, 78, 221, 0.08);
+          border: 1px solid rgba(157, 78, 221, 0.28);
+          border-radius: 12px;
+          padding: 18px 20px;
+          text-align: left;
+          color: #e0aaff;
+        }
+
+        .manual-join-title {
+          font-weight: 700;
+          font-size: 0.95rem;
+          margin-bottom: 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+          color: #e0aaff;
+        }
+
+        .manual-join-subtitle {
+          font-weight: 400;
+          font-size: 0.78rem;
+          opacity: 0.7;
+          color: #c084fc;
+        }
+
+        .manual-join-steps {
+          margin: 0 0 16px 0;
+          padding-left: 20px;
+          color: #e0aaff;
+          font-size: 0.88rem;
+          line-height: 1.7;
+        }
+
+        .manual-join-steps li { margin-bottom: 2px; }
+
+        .manual-join-steps strong { color: #fff; }
+
+        .bot-handle {
+          background: rgba(157, 78, 221, 0.2);
+          border: 1px solid rgba(157, 78, 221, 0.35);
+          color: #d8b4fe;
+          padding: 1px 7px;
+          border-radius: 4px;
+          font-family: monospace;
+          font-size: 0.88em;
+        }
+
+        .manual-join-code-row {
+          border-top: 1px solid rgba(157, 78, 221, 0.2);
+          padding-top: 14px;
+        }
+
+        .manual-join-code-label {
+          font-size: 0.75rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: #c084fc;
+          margin-bottom: 8px;
+          opacity: 0.85;
+        }
+
+        .manual-join-code-wrap {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          background: rgba(0, 0, 0, 0.25);
+          border: 1px solid rgba(157, 78, 221, 0.3);
+          border-radius: 8px;
+          padding: 8px 12px;
+        }
+
+        .manual-join-code-value {
+          font-family: monospace;
+          font-size: 1.15rem;
+          font-weight: 700;
+          color: #fff;
+          letter-spacing: 1.5px;
+          flex: 1;
+        }
+
+        .copy-code-btn {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          padding: 5px 12px;
+          background: rgba(157, 78, 221, 0.2);
+          border: 1px solid rgba(157, 78, 221, 0.4);
+          border-radius: 6px;
+          color: #e0aaff;
+          font-size: 0.8rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+          white-space: nowrap;
+        }
+
+        .copy-code-btn:hover {
+          background: rgba(157, 78, 221, 0.35);
           color: #fff;
         }
       `}</style>
